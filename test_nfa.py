@@ -130,9 +130,9 @@ class TestNFA(unittest.TestCase):
     def test_minimizing_dfa(self):
         # test lecture example
         self._dfa2min.minimize()
-        self.assertEquals({0}, self._dfa2min._start_states)
-        self.assertEquals({1}, self._dfa2min._accept_states)
-        self.assertEquals(
+        self.assertEqual({0}, self._dfa2min._start_states)
+        self.assertEqual({1}, self._dfa2min._accept_states)
+        self.assertEqual(
             {0: {0: {1}, 1: {1}},
              1: {0: {1}, 1: {1}}},
             self._dfa2min._transitions)
