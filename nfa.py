@@ -203,7 +203,6 @@ class NFA:
                     M[i][j] = -1
                     M[j][i] = -1
 
-        print(M)
         changed = True
         while changed:
             changed = False
@@ -212,15 +211,12 @@ class NFA:
                     for symbol in range(self._alphabet_size):
                         ii = list(self._transitions[states[i]][symbol])[0]
                         ji = list(self._transitions[states[j]][symbol])[0]
-                        print(i, j, M[i][j], ii, ji, M[ii][ji])
 
                         if M[i][j] is None and M[ii][ji] is not None:
                             M[i][j] = symbol
                             M[j][i] = symbol
                             changed = True
                             break
-
-        print(M)
 
         new_states_map = {}
         new_transitions = defaultdict(dict)
