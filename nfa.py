@@ -176,3 +176,78 @@ class NFA:
                     for vv in v:
                         file.write(f"{state} {k} {vv}")
                         file.write("\n")
+
+    def minimize(self):
+        # convert self to dfa first. for testing purposes (for lecture example
+        # to work), removed (need normal state names,i'm confused otherwise:( )
+        # self.to_DFA()
+        # if not self.__normalized:
+        #     self.normalize()
+
+        reachable_states = self._get_reachable_states()
+        self._transitions = {
+            state: trans
+            for state, trans in self._transitions.items()
+            if state in reachable_states}
+        self._start_states.intersection_update(reachable_states)
+        self._accept_states.intersection_update(reachable_states)
+
+        states = list(self._transitions.keys())
+        n = len(states)
+        M = [[None for _ in range(n)] for _ in range(n)]
+
+        for i in range(n):
+            for j in range(i + 1, n):
+                if (states[i] in self._accept_states) !=\
+                   (states[j] in self._accept_states):
+                    M[i][j] = -1
+                    M[j][i] = -1
+
+        changed = True
+        while changed:
+            changed = False
+            for i in range(n):
+                for j in range(i + 1, n):
+                    for symbol in range(self._alphabet_size):
+                        ii = list(self._transitions[states[i]][symbol])[0]
+                        ji = list(self._transitions[states[j]][symbol])[0]
+
+                        if M[i][j] is None and M[ii][ji] is not None:
+                            M[i][j] = symbol
+                            M[j][i] = symbol
+                            changed = True
+                            break
+
+        new_states_map = {}
+        new_transitions = defaultdict(dict)
+        new_accept_states = set()
+
+        new_state_index = 0
+        for i in range(n):
+            for j in range(i + 1, n):
+                if M[i][j] is None:
+                    state = states[i]
+                    if state not in new_states_map:
+                        new_states_map[state] = new_state_index
+                        new_state_index += 1
+                    new_state = new_states_map[state]
+
+                    if states[j] not in new_states_map:
+                        new_states_map[states[j]] = new_state
+
+                    for symbol in self._transitions[states[i]]:
+                        target_states = self._transitions[states[i]][symbol]
+                        if target_states:
+                            target_state = next(iter(target_states))
+                            new_transitions[new_state][symbol] = (
+                                new_states_map.get(target_state, target_state)
+                            )
+
+                    if states[i] in self._accept_states:
+                        new_accept_states.add(new_state)
+
+        self._transitions = new_transitions
+        self._start_states = {
+            new_states_map.get(state) for state in self._start_states
+        }
+        self._accept_states = new_accept_states

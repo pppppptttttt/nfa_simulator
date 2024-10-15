@@ -28,6 +28,19 @@ class TestNFA(unittest.TestCase):
             }
         )
 
+        # as in lecture example
+        self._dfa2min = NFA(
+            states_size=3,
+            alphabet_size=2,
+            start_states={0},
+            accept_states={1, 2},
+            transitions={
+                0: {0: {2}, 1: {1}},
+                1: {0: {1}, 1: {2}},
+                2: {0: {2}, 1: {2}}
+            }
+        )
+
     def test_accepts_empty_string(self):
         result = self._nfa.accepts("")
         self.assertFalse(result, "NFA should not accept empty string")
@@ -113,6 +126,17 @@ class TestNFA(unittest.TestCase):
         self.assertFalse(self._nfa2dfa.accepts("00"))
         self.assertTrue(self._nfa2dfa.accepts("01101"))
         self.assertFalse(self._nfa2dfa.accepts("010"))
+
+    def test_minimizing_dfa(self):
+        # test lecture example
+        self._dfa2min.minimize()
+        self.assertEquals({0}, self._dfa2min._start_states)
+        self.assertEquals({1}, self._dfa2min._accept_states)
+        self.assertEquals(
+            {0: {0: {1}, 1: {1}},
+             1: {0: {1}, 1: {1}}},
+            self._dfa2min._transitions)
+        # self._dfa2min.write_to_file("minimized_dfa.txt")
 
 
 if __name__ == "__main__":
